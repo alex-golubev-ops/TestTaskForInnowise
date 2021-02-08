@@ -6,14 +6,14 @@ public class User {
     private String firstName;
     private String lastName;
     private String email;
-    private List<String> telephony;
+    private List<String> telephones;
     private List<Role> roles;
 
     public User(String firstName, String lastName, String email, List<String> telephony, List<Role> roles) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.telephony = telephony;
+        this.telephones = telephony;
         this.roles = roles;
     }
 
@@ -41,12 +41,12 @@ public class User {
         this.email = email;
     }
 
-    public List<String> getTelephony() {
-        return telephony;
+    public List<String> getTelephones() {
+        return telephones;
     }
 
-    public void setTelephony(List<String> telephony) {
-        this.telephony = telephony;
+    public void setTelephones(List<String> telephones) {
+        this.telephones = telephones;
     }
 
     public List<Role> getRoles() {
