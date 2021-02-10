@@ -20,7 +20,7 @@ public interface Store {
 
     void save(User user);
 
-    void update(User user);
+    void update(User oldUser, User newUser);
 
     void delete(User user);
 
