@@ -1,8 +1,11 @@
 package com.golubev.testtask.entity;
 
 import java.util.List;
+import java.util.Objects;
 
 public class User {
+    private static Long counter=0L;
+    private Long id = counter++;
     private String firstName;
     private String lastName;
     private String email;
@@ -15,6 +18,31 @@ public class User {
         this.email = email;
         this.telephones = telephony;
         this.roles = roles;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", telephones=" + telephones +
+                ", roles=" + roles +
+                '}';
     }
 
     public String getFirstName() {
@@ -55,5 +83,13 @@ public class User {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }
