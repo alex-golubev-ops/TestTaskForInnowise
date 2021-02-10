@@ -46,9 +46,22 @@ public class UserStore implements Store {
 
 
     @Override
-    public void update(User user) {
-        users.remove(user);
-        users.add(user);
+    public void update(User oldUser, User newUser) {
+        if(newUser.getFirstName()!=null){
+            oldUser.setFirstName(newUser.getFirstName());
+        }
+        if(newUser.getLastName()!=null){
+            oldUser.setLastName(newUser.getLastName());
+        }
+        if(newUser.getEmail()!=null){
+            oldUser.setEmail(newUser.getEmail());
+        }
+        if(newUser.getTelephones()!=null){
+            oldUser.setTelephones(newUser.getTelephones());
+        }
+        if(newUser.getRoles()!=null){
+            oldUser.setRoles(newUser.getRoles());
+        }
     }
 
     @Override
