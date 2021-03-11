@@ -1,6 +1,6 @@
 package com.golubev.testtask.entity;
 
-import com.golubev.testtask.exception.RoleException;
+import com.golubev.testtask.exception.valid.RoleException;
 
 public enum Role {
     USER(1),
@@ -15,7 +15,7 @@ public enum Role {
         this.level=level;
     }
 
-    public static Role getRole(int number){
+    public static Role getRole(int number) throws RoleException {
         switch (number){
             case 1:{
 

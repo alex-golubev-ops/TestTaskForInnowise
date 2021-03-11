@@ -4,31 +4,31 @@ import com.golubev.testtask.application.state.EnterTypeUser;
 import com.golubev.testtask.builder.UserBuilder;
 import com.golubev.testtask.entity.Role;
 import com.golubev.testtask.entity.User;
-import com.golubev.testtask.exception.*;
-import com.golubev.testtask.store.Store;
-import com.golubev.testtask.store.UserStore;
+import com.golubev.testtask.exception.valid.*;
+import com.golubev.testtask.service.UserStorageService;
+import com.golubev.testtask.service.impl.UserStorageServiceImp;
 import com.golubev.testtask.validation.UserBuilderValidator;
 
-import java.util.*;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Scanner;
 
 public class Application {
-    private Scanner scanner;
-    private Store storeUsers;
+    private final InputStream inputStream;
+    private final UserStorageService service;
+    private final UserBuilder userBuilder;
 
-    public Application(Scanner scanner, String url) {
-
-        try {
-            this.scanner = scanner;
-            storeUsers = new UserStore();
-            storeUsers.init(url);
-        } catch (CanNotReadFileException e) {
-            System.out.println(e.getMessage());
-        }
-
+    public Application(InputStream inputStream) {
+        service = new UserStorageServiceImp();
+        this.inputStream = inputStream;
+        userBuilder = new UserBuilderValidator();
 
     }
 
     public void run() {
+        Scanner scanner = new Scanner(inputStream);
         String command = "";
 
         do {
@@ -63,10 +63,6 @@ public class Application {
                     deleteUser();
                     break;
                 }
-                case "6": {
-                    exit();
-                    break;
-                }
                 default: {
                     System.out.println("Command not recording. Please try again");
                 }
@@ -76,56 +72,50 @@ public class Application {
 
     }
 
-    private void exit() {
-        try {
-            storeUsers.destroy();
-        } catch (CanNotWriteFileException e) {
-            System.out.println(e.getMessage());
-        }
-    }
 
     private void deleteUser() {
+        Scanner scanner = new Scanner(inputStream);
         System.out.println("Delete user");
         System.out.println("Enter id user");
-        String enterLine = scanner.nextLine();
-        Optional<User> byId = storeUsers.findById(Long.parseLong(enterLine));
-        byId.ifPresentOrElse(e -> storeUsers.delete(e),
-                () -> System.out.println("User with id is not exist"));
+        if(!scanner.hasNextLong()){
+            System.out.println("You entered not long number");
+            deleteUser();
+            return;
+        }
+        User user = new User();
+        user.setId(scanner.nextLong());
+        try {
+            service.remove(user);
+            System.out.println("User was remove");
+        } catch (UserStorageServiceException e) {
+            System.out.println(e.getMessage());
+            deleteUser();
+        }
     }
 
     private void updateUser() {
+        Scanner scanner = new Scanner(inputStream);
         System.out.println("Update user");
         String enterLine = "";
-        System.out.println("Chose");
-        UserBuilder userBuilder = new UserBuilderValidator();
-        System.out.println("Enter id");
-        enterLine = scanner.nextLine();
-        User userFromStore;
-        try{
-            Optional<User> byId = storeUsers.findById(Long.parseLong(enterLine));
-             userFromStore = byId.orElseThrow(
-                    ()->{
-                        System.out.println("User with id is not exist");
-                        throw new RuntimeException();
-                    });
+        System.out.println("Chose(enter id)");
+        try {
+            List<User> all = service.findAll();
+            all.forEach(System.out::println);
+            if(!scanner.hasNextLong()){
+                System.out.println("You entered is not long number");
+                updateUser();
+                return;
+            }
 
-
-        }catch (NumberFormatException e){
-            System.out.println("You entered not number. Please try again");
-            return;
-        }
-        catch (RuntimeException e){
-            System.out.println("Please try again");
-            return;
-        }
-
-        do {
+            User userFromDao = service.findById(scanner.nextLong());
+            do {
             try {
                 EnterTypeUser[] values = EnterTypeUser.values();
                 for (int i = 0; i < values.length; i++) {
                     System.out.println(i + 1 + ". " + values[i]);
                 }
                 System.out.println(values.length + 1 + ". Exit");
+                scanner.nextLine();
                 enterLine = scanner.nextLine();
                 switch (enterLine) {
                     case "1": {
@@ -134,27 +124,27 @@ public class Application {
                         userBuilder.setLastName(enterLine);
                         break;
                     }
-                    case "2":{
+                    case "2": {
                         System.out.println("Enter Firstname");
                         enterLine = scanner.nextLine();
                         userBuilder.setFirstName(enterLine);
                         break;
                     }
-                    case "3":{
+                    case "3": {
                         System.out.println("Enter email:");
                         enterLine = scanner.nextLine();
                         userBuilder.setEmail(enterLine);
                         break;
                     }
-                    case "4":{
+                    case "4": {
                         System.out.println("Enter telephone:");
                         enterLine = scanner.nextLine();
                         List<String> newTelephones = new ArrayList<>(Arrays.asList(enterLine));
-                        newTelephones.addAll(userFromStore.getTelephones());
+                        newTelephones.addAll(userFromDao.getTelephones());
                         userBuilder.setTelephones(newTelephones);
                         break;
                     }
-                    case "5":{
+                    case "5": {
                         System.out.println("Chose Role:");
                         Role[] valuesRole = Role.values();
                         for (int i = 0; i < valuesRole.length; i++) {
@@ -162,47 +152,49 @@ public class Application {
                         }
                         enterLine = scanner.nextLine();
                         List<Role> roles = new ArrayList<>(Arrays.asList(Role.getRole(Integer.parseInt(enterLine))));
-                        roles.addAll(userFromStore.getRoles());
+                        roles.addAll(userFromDao.getRoles());
                         userBuilder.setRoles(roles);
                         break;
                     }
                 }
 
                 User newUser = userBuilder.buildUser();
-                storeUsers.update(userFromStore,newUser);
+                service.update(userFromDao, newUser);
                 System.out.println("User was update");
                 return;
 
-            }catch (TelephoneException | RoleException | IncorrectEmailException e){
-                System.out.println(e.getMessage()+"\nPlease try again");
-                return;
+            } catch (UserValidException e) {
+                System.out.println(e.getMessage() + "\nPlease try again");
             }
 
-        } while (true);
+            } while (true);
+        } catch (UserStorageServiceException e) {
+            System.out.println(e.getMessage());
+            updateUser();
+        }
 
     }
 
     private void findUserById() {
+        Scanner scanner = new Scanner(inputStream);
         System.out.println("Find user by id");
+
         String enterLine = "";
 
         do {
 
             try {
-
-                System.out.println("Enter id:");
-                enterLine = scanner.nextLine();
-
-                Optional<User> byId = storeUsers.findById(Long.parseLong(enterLine));
-
-                byId.ifPresentOrElse(System.out::println,
-                        () -> System.out.println("User with id is not exist"));
+                System.out.println("Enter id: ");
+                if(!scanner.hasNextLong()){
+                    System.out.println("You entered not long number");
+                    continue;
+                }
+                User user = service.findById(scanner.nextLong());
+                System.out.println(user);
                 return;
 
-            } catch (NumberFormatException e) {
-
-                System.out.println("You entered not number. Please try again");
-
+            } catch (UserStorageServiceException e) {
+                System.out.println(e.getMessage());
             }
 
         } while (true);
@@ -210,8 +202,8 @@ public class Application {
     }
 
     private void createUser() {
+        Scanner scanner = new Scanner(inputStream);
         EnterTypeUser typeEnter = EnterTypeUser.FIRSTNAME;
-        UserBuilder userBuilder = new UserBuilderValidator();
         System.out.println("Creating user");
         String enterLine = "";
         do {
@@ -253,14 +245,15 @@ public class Application {
                 }
 
                 User newUser = userBuilder.buildUser();
-                storeUsers.save(newUser);
+                service.add(newUser);
                 System.out.println("User was created");
                 return;
 
-            } catch (IncorrectEmailException | RoleException | TelephoneException e) {
+            } catch (UserValidException e) {
                 System.out.println(e.getMessage() + "\nPlease try again");
-            } catch (NumberFormatException e) {
-                System.out.println("You entered not number. Please try again");
+            }  catch (UserStorageServiceException e) {
+                System.out.println(e.getMessage());
+                return;
             }
         } while (true);
 
@@ -268,9 +261,14 @@ public class Application {
 
     private void findAll() {
         System.out.println("Find all user ");
-        List<User> all = storeUsers.findAll();
-        for (User user : all) {
-            System.out.println(user);
+        try {
+
+            List<User> all = service.findAll();
+            for (User user : all) {
+                System.out.println(user);
+            }
+        } catch (UserStorageServiceException e) {
+            System.out.println(e.getMessage());
         }
     }
 

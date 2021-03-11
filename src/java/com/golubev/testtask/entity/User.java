@@ -12,6 +12,10 @@ public class User {
     private List<String> telephones;
     private List<Role> roles;
 
+    public User() {
+
+    }
+
     public User(String firstName, String lastName, String email, List<String> telephony, List<Role> roles) {
         this.firstName = firstName;
         this.lastName = lastName;

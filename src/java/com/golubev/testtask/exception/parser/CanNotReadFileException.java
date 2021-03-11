@@ -1,4 +1,4 @@
-package com.golubev.testtask.exception;
+package com.golubev.testtask.exception.parser;
 
 public class CanNotReadFileException extends Exception {
 

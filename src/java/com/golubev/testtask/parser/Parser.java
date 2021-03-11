@@ -1,8 +1,8 @@
 package com.golubev.testtask.parser;
 
 import com.golubev.testtask.entity.User;
-import com.golubev.testtask.exception.CanNotReadFileException;
-import com.golubev.testtask.exception.CanNotWriteFileException;
+import com.golubev.testtask.exception.parser.CanNotReadFileException;
+import com.golubev.testtask.exception.parser.CanNotWriteFileException;
 
 import java.util.List;
 

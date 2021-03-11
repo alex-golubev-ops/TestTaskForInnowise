@@ -4,6 +4,9 @@ import com.golubev.testtask.builder.UserBuilder;
 import com.golubev.testtask.builder.imp.UserBuilderImp;
 import com.golubev.testtask.entity.Role;
 import com.golubev.testtask.entity.User;
+import com.golubev.testtask.exception.valid.IncorrectEmailException;
+import com.golubev.testtask.exception.valid.RoleException;
+import com.golubev.testtask.exception.valid.TelephoneException;
 import com.golubev.testtask.validation.api.EmailValidatorImpl;
 import com.golubev.testtask.validation.api.TelephoneValidatorImpl;
 import com.golubev.testtask.validation.api.UserValidatorImpl;
@@ -14,13 +17,13 @@ import java.util.List;
 
 public class UserBuilderValidator implements UserBuilder {
 
-    private UserBuilderImp userBuilder = new UserBuilderImp();
+    private final UserBuilderImp userBuilder = new UserBuilderImp();
 
-    private EmailValidator emailValidator = new EmailValidatorImpl();
+    private final EmailValidator emailValidator = new EmailValidatorImpl();
 
-    private TelephoneValidator telephoneValidator = new TelephoneValidatorImpl();
+    private final TelephoneValidator telephoneValidator = new TelephoneValidatorImpl();
 
-    private UserValidator userValidator = new UserValidatorImpl();
+    private final UserValidator userValidator = new UserValidatorImpl();
 
 
     @Override
@@ -41,20 +44,20 @@ public class UserBuilderValidator implements UserBuilder {
     }
 
     @Override
-    public void setEmail(String email) {
+    public void setEmail(String email) throws IncorrectEmailException {
         emailValidator.check(email);
         userBuilder.setEmail(email);
     }
 
     @Override
-    public void setTelephones(List<String> telephones) {
+    public void setTelephones(List<String> telephones) throws TelephoneException {
         telephoneValidator.check(telephones);
         userBuilder.setTelephones(telephones);
     }
 
 
     @Override
-    public void setRoles(List<Role> roles) {
+    public void setRoles(List<Role> roles) throws RoleException {
         userValidator.check(roles);
         userBuilder.setRoles(roles);
     }
