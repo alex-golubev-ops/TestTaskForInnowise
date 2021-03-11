@@ -1,17 +1,14 @@
 package com.golubev.testtask.service.impl;
 
 import com.golubev.testtask.dao.UserListDao;
-import com.golubev.testtask.entity.Role;
 import com.golubev.testtask.entity.User;
 import com.golubev.testtask.exception.dao.DaoException;
 import com.golubev.testtask.exception.entity.UserAlredyExistException;
 import com.golubev.testtask.exception.entity.UserNotExistException;
 import com.golubev.testtask.exception.valid.UserStorageServiceException;
-import com.golubev.testtask.exception.valid.UserValidException;
 import com.golubev.testtask.factory.DaoFactory;
 import com.golubev.testtask.service.UserStorageService;
 import com.golubev.testtask.validation.UserBuilderValidator;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -25,9 +22,9 @@ public class UserStorageServiceImp implements UserStorageService {
     public void add(User user) throws UserStorageServiceException {
         try {
             List<User> users = listDao.findAll();
-           if(users.contains(user)){
-               throw new UserAlredyExistException("User with id  " +user.getId()+" already exist");
-           }
+            if (users.contains(user)) {
+                throw new UserAlredyExistException("User with id  " + user.getId() + " already exist");
+            }
             listDao.add(user);
         } catch (UserAlredyExistException | DaoException e) {
             throw new UserStorageServiceException(e.getMessage());
@@ -37,11 +34,11 @@ public class UserStorageServiceImp implements UserStorageService {
 
     @Override
     public void remove(User user) throws UserStorageServiceException {
-       try {
-           listDao.remove(user);
-       } catch (DaoException e) {
-           throw new UserStorageServiceException(e.getMessage());
-       }
+        try {
+            listDao.remove(user);
+        } catch (DaoException e) {
+            throw new UserStorageServiceException(e.getMessage());
+        }
 
     }
 
@@ -51,8 +48,8 @@ public class UserStorageServiceImp implements UserStorageService {
         try {
             List<User> users = listDao.findAll();
 
-            if(!users.contains(oldUser)){
-                throw new UserNotExistException("User with id "+ oldUser.getId()+" is not exist");
+            if (!users.contains(oldUser)) {
+                throw new UserNotExistException("User with id " + oldUser.getId() + " is not exist");
             }
 
             if (newUser.getFirstName() != null) {
@@ -77,7 +74,7 @@ public class UserStorageServiceImp implements UserStorageService {
             listDao.update(oldUser);
 
         } catch (DaoException | UserNotExistException e) {
-           throw new UserStorageServiceException(e.getMessage());
+            throw new UserStorageServiceException(e.getMessage());
         }
     }
 
@@ -85,7 +82,7 @@ public class UserStorageServiceImp implements UserStorageService {
     public User findById(long id) throws UserStorageServiceException {
         try {
             Optional<User> user = listDao.findById(id);
-            return user.orElseThrow(()->new UserNotExistException("User with id "+ id+" not exist "));
+            return user.orElseThrow(() -> new UserNotExistException("User with id " + id + " not exist "));
         } catch (DaoException | UserNotExistException e) {
             throw new UserStorageServiceException(e.getMessage());
         }
@@ -94,7 +91,7 @@ public class UserStorageServiceImp implements UserStorageService {
 
     @Override
     public List<User> findAll() throws UserStorageServiceException {
-        try{
+        try {
             List<User> users = listDao.findAll();
             return users;
         } catch (DaoException e) {
